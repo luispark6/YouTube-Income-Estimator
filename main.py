@@ -42,24 +42,59 @@ def main():
                 Last_50_Videos_Accumlated_Views INT,
                 Time VARCHAR(255),
                 Subscribers INT,
-                Estimated_Earnings VARCHAR(255)
+                Estimated_Earnings VARCHAR(255),
+                PRIMARY KEY (id)
             )
         """)
         print("Table created successfully")
 
 
+    channelDictionary = {}
+    #setting the channel name to their corresponding channel id in a dictionary
+    channelDictionary["TSeries"] = []
+    channelDictionary["TSeries"].append( "UCq-Fj5jknLsUf-MWSy4_brA")
+    channelDictionary["Cocomelon"] = []
+    channelDictionary["Cocomelon"].append("UCbCmjCuTUZos6Inko4u57UQ")
+    channelDictionary["SetIndia"] = []
+    channelDictionary["SetIndia"].append("UCpEhnqL0y41EpW2TvWAHD7Q")
+    channelDictionary["MrBeast"] = []
+    channelDictionary["MrBeast"].append("UCX6OQ3DkcsbYNE6H8uQQuVA")
+    channelDictionary["PewDiePie"] = []
+    channelDictionary["PewDiePie"].append("UC-lHJZR3Gqxm24_Vd_AJ5Yw")
+    channelDictionary["KidsDianaShow"] = []
+    channelDictionary["KidsDianaShow"].append("UCk8GzjMOrta8yxDcKfylJYw")
+    channelDictionary["LikeNastya"] = []
+    channelDictionary["LikeNastya"].append("UCJplp5SjeGSdVdwsfb9Q7lQ")
+    channelDictionary["VladAndNiki"] = []
+    channelDictionary["VladAndNiki"].append("UCvlE5gTbOvjiolFlEm-c_Ow")
+    channelDictionary["WWE"] = []
+    channelDictionary["WWE"].append("UCJ5v_MCY6GNUBTO8-D3XoAg")
+    channelDictionary["ZeeMusicCompany"] = []
+    channelDictionary["ZeeMusicCompany"].append("UCFFbwnve3yF62-tVXkTyHqg")
+    #this will contain all the data we scraped using the youtube api for each youtuber in a list
+    channelInfo = []
+    for i in channelDictionary:
+        #requesting the channel information from each youtube channel from youtube server
+        request_channel_info = youtube.channels().list( 
+        part="snippet,contentDetails,statistics",
+        id=channelDictionary[i]
+        )
+        #executes the request and feeds the information to response channel
+        response_channel = request_channel_info.execute()
+        #append the information to channelInfo so we have all the channels information in one list
+        channelInfo.append(response_channel)
+    #accumulator that will be used to append the playlist id into each youtube channel 
+    acc = 0
+    for i in channelDictionary:
+        #this gets the upload id which gives us a playlist id of the most recent uploads from
+        #the channel
+        playlistid = channelInfo[acc]['items'][0]["contentDetails"]["relatedPlaylists"]['uploads']
+        channelDictionary[i].append()
+        acc = acc+1
 
-    #setting the channel name to their corresponding channel id
-    TSeries = "UCq-Fj5jknLsUf-MWSy4_brA"
-    Cocomelon = "UCbCmjCuTUZos6Inko4u57UQ"
-    SetIndia = "UCpEhnqL0y41EpW2TvWAHD7Q"
-    MrBeast = "UCX6OQ3DkcsbYNE6H8uQQuVA"
-    PewDiePie= "UC-lHJZR3Gqxm24_Vd_AJ5Yw"
-    KidsDianaShow="UCk8GzjMOrta8yxDcKfylJYw"
-    LikeNastya ="UCJplp5SjeGSdVdwsfb9Q7lQ"
-    VladAndNiki = "UCvlE5gTbOvjiolFlEm-c_Ow"
-    WWE = "UCJ5v_MCY6GNUBTO8-D3XoAg"
-    ZeeMusicCompany = "UCFFbwnve3yF62-tVXkTyHqg"
+
+    
+    
 
     cursor.close()
     mydb.close()
