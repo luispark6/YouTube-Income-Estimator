@@ -87,10 +87,17 @@ def main():
     acc = 0
     for i in channelDictionary:
         #this gets the upload id which gives us a playlist id of the most recent uploads from
-        #the channel
+        #the channel and gets the statistics of each channel and appends it to the dictionary
         playlistid = channelInfo[acc]['items'][0]["contentDetails"]["relatedPlaylists"]['uploads']
-        channelDictionary[i].append()
+        channelStatistics = channelInfo[acc]["items"][0]['statistics']
+
+        channelDictionary[i].append(playlistid)
+        channelDictionary[i].append(channelStatistics)
+
         acc = acc+1
+    print(channelDictionary)
+    
+
 
 
     
