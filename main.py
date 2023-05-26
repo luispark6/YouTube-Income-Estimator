@@ -90,10 +90,8 @@ def main():
         #the channel and gets the statistics of each channel and appends it to the dictionary
         playlistid = channelInfo[acc]['items'][0]["contentDetails"]["relatedPlaylists"]['uploads']
         channelStatistics = channelInfo[acc]["items"][0]['statistics']
-
         channelDictionary[i].append(playlistid)
         channelDictionary[i].append(channelStatistics)
-
         acc = acc+1
     print(channelDictionary)
     
