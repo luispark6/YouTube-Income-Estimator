@@ -86,18 +86,61 @@ def main():
     #accumulator that will be used to append the playlist id into each youtube channel 
     acc = 0
     for i in channelDictionary:
-        #this gets the upload id which gives us a playlist id of the most recent uploads from
+        #this gets the playlist id which gives us a playlist of the most recent uploads from
         #the channel and gets the statistics of each channel and appends it to the dictionary
         playlistid = channelInfo[acc]['items'][0]["contentDetails"]["relatedPlaylists"]['uploads']
         channelStatistics = channelInfo[acc]["items"][0]['statistics']
         channelDictionary[i].append(playlistid)
         channelDictionary[i].append(channelStatistics)
         acc = acc+1
-    print(channelDictionary)
+    
+
+    #this requests the information for the lastest uploads  information from the channel 
+    #and we can specify how many recently uploaded videos we want
+    for i in channelDictionary:
+        request_videos = youtube.playlistItems().list(
+            part="snippet,contentDetails",
+            playlistId=channelDictionary[i][1],
+            maxResults=5
+        )
+        #executes the request
+        response_videos = request_videos.execute()
+        #this will accumlate all the views of the past 50 videos for each channel
+        accumulated_views = 0
+        #this will loop through all the video information for the given youtuber and 
+        #accumulate the views for each video
+        for j in response_videos['items']:
+            #requests the video information
+            request_video_id = youtube.videos().list(
+            part="snippet,contentDetails,statistics",
+            id=j['contentDetails']['videoId'])
+            #executes the video information and feeds information into response_video_id
+            response_video_id = request_video_id.execute()
+            #extract the views of the jth video
+            views = response_video_id["items"][0]["statistics"]["viewCount"]
+            #add into the accumlator
+            accumulated_views = accumulated_views + int(views)
+        #creates a dictionary with past 50 video accumulated view count and estimated earnings
+        dict = {}
+        dict[i+"'s last 50 video data"] = []
+        dict[i+"'s last 50 video data"].append(str(accumulated_views) +" views")
+        #it is estimated that each view earns about 0.018 per view
+        #we will convert to an int because cents won't be necessary
+        estimatedEarnings = int((accumulated_views * 0.018))
+        #seperates the integer with commas for readabiltiy
+        estimatedEarnings= f"{estimatedEarnings:,}"
+        #append amount into the dictionary
+        dict[i+"'s last 50 video data"].append(str(estimatedEarnings) +"$")
+        channelDictionary[i].append(dict)
+    
+
+        
+
+        
     
 
 
-
+    
     
     
 
