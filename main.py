@@ -5,6 +5,8 @@ os.system("sudo mysql.server start")
 from googleapiclient.discovery import build
 import googleapiclient.errors
 import mysql.connector
+from datetime import datetime
+
 
 def main():
     api_service_name = "youtube"
@@ -17,7 +19,7 @@ def main():
     host = "localhost",
     user = "root",
     password = "Leoluis02",
-    database = "Youtube_Income_Estimator"
+    database = "Youtube_Statistic_Channel"
     )
 
     #creating object that allows me to execute SQL queries
@@ -25,21 +27,23 @@ def main():
     #will output table named "Information", and we will fetch
     #this output with fetchone
     cursor.execute("SHOW TABLES LIKE 'Information'")
+
     result = cursor.fetchone()
+    
 
     #if result is true(there is data with table name channels),
     #the tabel already exists which means we dont need to create
     #a row of the necessary columns(likes, views, channel name, etc.)
     if result:
         # Table exists, do nothing
-        print("Table already exists")
+        print("")
     else:
         # Create the channels table
         cursor.execute("""
             CREATE TABLE Information (
                 id INT NOT NULL AUTO_INCREMENT,
                 Channel VARCHAR(255),
-                Last_50_Videos_Accumlated_Views INT,
+                Last_50_Videos_Accumulated_Views VARCHAR(255),
                 Time VARCHAR(255),
                 Subscribers INT,
                 Estimated_Earnings VARCHAR(255),
@@ -101,7 +105,7 @@ def main():
         request_videos = youtube.playlistItems().list(
             part="snippet,contentDetails",
             playlistId=channelDictionary[i][1],
-            maxResults=5
+            maxResults=50
         )
         #executes the request
         response_videos = request_videos.execute()
@@ -123,7 +127,7 @@ def main():
         #creates a dictionary with past 50 video accumulated view count and estimated earnings
         dict = {}
         dict[i+"'s last 50 video data"] = []
-        dict[i+"'s last 50 video data"].append(str(accumulated_views) +" views")
+        dict[i+"'s last 50 video data"].append(str(accumulated_views))
         #it is estimated that each view earns about 0.018 per view
         #we will convert to an int because cents won't be necessary
         estimatedEarnings = int((accumulated_views * 0.018))
@@ -132,18 +136,31 @@ def main():
         #append amount into the dictionary
         dict[i+"'s last 50 video data"].append(str(estimatedEarnings) +"$")
         channelDictionary[i].append(dict)
-    
 
-        
+    # Get the current time
+    current_time = datetime.now()
 
-        
-    
+    for i in channelDictionary:
+        data = [(i, str(channelDictionary[i][3][i+"'s last 50 video data"][0]), current_time, int(channelDictionary[i][2]['subscriberCount']), \
+            channelDictionary[i][3][i+"'s last 50 video data"][1])]
+        # Insert the data into the table
+        sql = "INSERT INTO Information (Channel, Last_50_Videos_Accumulated_Views, Time, Subscribers, Estimated_Earnings) VALUES (%s, %s, %s, %s, %s)"
+        cursor.executemany(sql, data)
 
 
-    
-    
-    
-
+    # this will select the table of information we want
+    select_query = "SELECT * FROM Information"  
+    #this will execute select query
+    cursor.execute(select_query)
+    # Fetch all rows from the result
+    rows = cursor.fetchall()
+    # Print the retrieved data
+    for row in rows:
+        channelId, channel, view_count, time, subscribers, earnings = row
+        print("ID: %d|Channel: %s|Last 50 Videos Views: %s|Time: %s|Subscribers: %d|Earnings \
+Past 50 videos: %s" %(channelId, channel, view_count, time, subscribers, earnings) )
+        print("")
+    #closing and stopping mysql database server
     cursor.close()
     mydb.close()
     os.system("sudo mysql.server stop")
