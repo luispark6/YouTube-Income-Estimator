@@ -30,6 +30,7 @@ def main():
 
     result = cursor.fetchone()
     
+    
 
     #if result is true(there is data with table name channels),
     #the tabel already exists which means we dont need to create
