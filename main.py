@@ -15,7 +15,7 @@ def main():
     youtube = build(api_service_name, api_version, developerKey=api_key)
 
     #connecting to local host which is my computer
-    mydb = mysql.connector.connect(
+    mydb = mysql.connector.connect( 
     host = "localhost",
     user = "root",
     password = "Leoluis02",
