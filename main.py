@@ -6,6 +6,8 @@ from googleapiclient.discovery import build
 import googleapiclient.errors
 import mysql.connector
 from datetime import datetime
+import matplotlib.pyplot as plt
+from matplotlib.ticker import ScalarFormatter
 
 
 def main():
@@ -140,7 +142,6 @@ def main():
 
     # Get the current time
     current_time = datetime.now()
-
     for i in channelDictionary:
         data = [(i, str(channelDictionary[i][3][i+"'s last 50 video data"][0]), current_time, int(channelDictionary[i][2]['subscriberCount']), \
             channelDictionary[i][3][i+"'s last 50 video data"][1])]
@@ -148,19 +149,73 @@ def main():
         sql = "INSERT INTO Information (Channel, Last_50_Videos_Accumulated_Views, Time, Subscribers, Estimated_Earnings) VALUES (%s, %s, %s, %s, %s)"
         cursor.executemany(sql, data)
 
-
     # this will select the table of information we want
     select_query = "SELECT * FROM Information"  
     #this will execute select query
     cursor.execute(select_query)
     # Fetch all rows from the result
     rows = cursor.fetchall()
+    #list of channels
+    channelList = []
+    #list of earnings
+    earningsList = []
+    #list of subscriber count
+    subscriberList = []
+    #list of view count
+    viewList= []
+    #ratio for how much each video they apporixmately make
+    ratio = []
     # Print the retrieved data
     for row in rows:
         channelId, channel, view_count, time, subscribers, earnings = row
         print("ID: %d|Channel: %s|Last 50 Videos Views: %s|Time: %s|Subscribers: %d|Earnings \
 Past 50 videos: %s" %(channelId, channel, view_count, time, subscribers, earnings) )
         print("")
+        channelList.append(channel)
+        earningsList.append(int(view_count)*0.018)
+        subscriberList.append(int(subscribers))
+        viewList.append(int(view_count))
+        ratio.append(int(int(view_count)*0.018) //50)
+    graphType = input("1: Channel and View Count Graph \n2: Channel and Subsrcriber Count Graph\n3: Channel and Earnings Graph\n4: Channel and Video/Earnings Ratio Graph\n5: Quit\n")
+    while graphType != '1' and graphType != '2' and graphType != '3' and graphType != '4' and graphType != '5':
+        print("Please enter 1, 2, 3, 4 or 5")
+        graphType = input("1: Channel and View Count Graph \n2: Channel and Subsrcriber Count Graph\n3: Channel and Earnings Graph\n4: Channel and Video/Earnings Ratio Graph\n5: Quit\n")
+    while True:
+        if graphType =="1":
+            plt.bar(channelList, viewList)
+            plt.xlabel("Channels")
+            plt.ylabel("Views")
+            plt.ylim(0, 15000000000)
+            plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+            plt.show()
+        elif graphType =='2':
+            plt.bar(channelList, subscriberList)
+            plt.xlabel("Channels")
+            plt.ylabel("Subscribers")
+            plt.ylim(0, 300000000)
+            plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+            plt.show()
+        elif graphType =='3':
+            plt.bar(channelList, earningsList)
+            plt.xlabel("Channels")
+            plt.ylabel("Earnings")
+            plt.ylim(0, 150000000)
+            plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+            plt.show()
+        elif graphType =='4':
+            plt.bar(channelList, ratio)
+            plt.xlabel("Channels")
+            plt.ylabel("Video/Earnings Ratio")
+            plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+            plt.show()
+        elif graphType == '5':
+            break
+        graphType = input("1: Channel and View Count Graph \n2: Channel and Subsrcriber Count Graph\n3: Channel and Earnings Graph\n4: Channel and Video/Earnings Ratio Graph\n5: Quit\n")
+        while graphType != '1' and graphType != '2' and graphType != '3' and graphType != '4' and graphType != '5':
+            print("Please enter 1, 2, 3, 4 or 5")
+            graphType = input("1: Channel and View Count Graph \n2: Channel and Subsrcriber Count Graph\n3: Channel and Earnings Graph\n4: Channel and Video/Earnings Ratio Graph\n5: Quit\n")
+        
+
     #closing and stopping mysql database server
     cursor.close()
     mydb.close()
